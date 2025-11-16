@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import TweetButton from './tweet-button';
 
-interface NewsArticle {
+export interface NewsArticle {
   title: string;
   description: string;
   source: string;
@@ -21,7 +21,7 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
     const date = new Date(dateString);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
-    
+
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -39,7 +39,7 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = ((hash << 5) - hash) + str.charCodeAt(i);
-      hash = hash & hash;
+      hash |= 0; // Convert to 32bit integer
     }
     return Math.abs(hash) % 5;
   };
@@ -57,18 +57,19 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
   return (
     <>
       <div className="group relative block h-full bg-card border border-border rounded-lg overflow-hidden hover:border-accent hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
+        
         {/* Image Container */}
         <div className={`relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center flex-shrink-0`}>
           {article.image ? (
             <Image
-              src={article.image || "/placeholder.svg?height=300&width=400&query=news"}
+              src={article.image}
               alt={article.title}
               fill
               className="object-cover"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <>
+            <div className="relative flex items-center justify-center w-full h-full">
               <div className="absolute inset-0 backdrop-blur-sm"></div>
               <div className="relative z-10 text-center px-4">
                 <svg className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground/50 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,9 +77,9 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
                 </svg>
                 <p className="text-xs text-muted-foreground/70">News Image</p>
               </div>
-            </>
+            </div>
           )}
-          
+
           {/* Score Badge */}
           <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold border ${getScoreBadgeColor(article.score)}`}>
             {Math.round(article.score)}
@@ -125,6 +126,7 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
         </div>
       </div>
 
+      {/* Tweet Dialog Modal */}
       {showTweetDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border rounded-lg p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
